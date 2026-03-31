@@ -1,0 +1,74 @@
+[
+  {
+    "serial": 1,
+    "title": "Measures of Central Tendency",
+    "description": "Compute arithmetic mean, median, mode, geometric mean, and harmonic mean.",
+    "explanation": "The program reads data as a vector and computes different measures of central tendency and displays them with a bar chart.",
+    "example": {
+      "input": "[1 2 2 3 4 5]",
+      "output": "Displays mean, median, mode, GM, HM"
+    },
+    "keywords": ["mean", "median", "mode", "statistics"],
+    "code": "clc;\\nclear;\\ndata = input('Enter the data values as a vector [ ]: ');\\nAM = mean(data);\\nMED = median(data);\\nMOD = mode(data);\\nif all(data > 0)\\n    GM = geomean(data);\\nelse\\n    GM = NaN;\\nend\\nif all(data ~= 0)\\n    HM = harmmean(data);\\nelse\\n    HM = NaN;\\nend\\nfprintf('\\nMeasures of Central Tendency:\\n');\\nfprintf('Arithmetic Mean   = %.4f\\n', AM);\\nfprintf('Median            = %.4f\\n', MED);\\nfprintf('Mode              = %.4f\\n', MOD);\\nfprintf('Geometric Mean    = %.4f\\n', GM);\\nfprintf('Harmonic Mean     = %.4f\\n', HM);"
+  },
+  {
+    "serial": 2,
+    "title": "Measures of Dispersion",
+    "description": "Compute range, quartile deviation, mean deviation, standard deviation, and variance.",
+    "explanation": "This program evaluates different measures that describe spread of data.",
+    "example": {
+      "input": "[12 15 18 20 25 30]",
+      "output": "Displays dispersion values"
+    },
+    "keywords": ["range", "variance", "standard deviation"],
+    "code": "clc;\\nclear;\\ndata = input('Enter the data values as a vector [ ]: ');\\nn = length(data);\\nRange = max(data) - min(data);\\nQ1 = prctile(data, 25);\\nQ3 = prctile(data, 75);\\nQD = (Q3 - Q1) / 2;\\nMeanVal = mean(data);\\nMD = sum(abs(data - MeanVal)) / n;\\nSD = std(data);\\nVAR = var(data);\\nfprintf('\\nMeasures of Dispersion:\\n');\\nfprintf('Range               = %.4f\\n', Range);\\nfprintf('Quartile Deviation  = %.4f\\n', QD);\\nfprintf('Mean Deviation      = %.4f\\n', MD);\\nfprintf('Standard Deviation  = %.4f\\n', SD);\\nfprintf('Variance            = %.4f\\n', VAR);"
+  },
+  {
+    "serial": 3,
+    "title": "Angle Between Two Surfaces",
+    "description": "Compute angle between two surfaces at a point using gradients.",
+    "explanation": "Gradients of both surfaces at a point give normal vectors. The angle between normals gives angle between surfaces.",
+    "example": {
+      "input": "Point (1,1)",
+      "output": "Angle in degrees"
+    },
+    "keywords": ["surface", "gradient", "angle"],
+    "code": "clc;\\nclear;\\nclose all;\\nsyms x y\\nf = x^2 + y^2;\\ng = 2*x + y;\\ngrad_f = gradient(f, [x y]);\\ngrad_g = gradient(g, [x y]);\\nx0 = 1;\\ny0 = 1;\\nN1 = double(subs(grad_f, [x y], [x0 y0]));\\nN2 = double(subs(grad_g, [x y], [x0 y0]));\\ntheta = acosd(dot(N1, N2) / (norm(N1) * norm(N2)));\\nfprintf('Angle = %.2f degrees\\n', theta);"
+  },
+  {
+    "serial": 4,
+    "title": "Linear Curve Fitting y = ax + b",
+    "description": "Fit a straight line to experimental data using least squares.",
+    "explanation": "Uses normal equations to compute slope and intercept.",
+    "example": {
+      "input": "x=[1 2 3], y=[2 4 6]",
+      "output": "y = 2x + 0"
+    },
+    "keywords": ["curve fitting", "least squares"],
+    "code": "clc;\\nclear;\\nx = input('Enter x: ');\\ny = input('Enter y: ');\\nn = length(x);\\nSx = sum(x);\\nSy = sum(y);\\nSxx = sum(x.^2);\\nSxy = sum(x.*y);\\nA = [Sxx Sx; Sx n];\\nB = [Sxy; Sy];\\ncoeff = A \\\\ B;\\na = coeff(1);\\nb = coeff(2);\\nfprintf('y = %.4f x + %.4f\\n', a, b);"
+  },
+  {
+    "serial": 5,
+    "title": "Power Curve Fitting y = ax^b",
+    "description": "Fit power law curve using logarithmic transformation.",
+    "explanation": "Log transform converts nonlinear relation into linear form for least squares fitting.",
+    "example": {
+      "input": "x=[1 2 3], y=[2 4 8]",
+      "output": "y = ax^b"
+    },
+    "keywords": ["nonlinear fitting", "power law"],
+    "code": "clc;\\nclear;\\nx = input('Enter x: ');\\ny = input('Enter y: ');\\nX = log(x);\\nY = log(y);\\nn = length(x);\\nSx = sum(X);\\nSy = sum(Y);\\nSxx = sum(X.^2);\\nSxy = sum(X.*Y);\\nA = [Sxx Sx; Sx n];\\nB = [Sxy; Sy];\\ncoeff = A \\\\ B;\\nb = coeff(1);\\na = exp(coeff(2));\\nfprintf('y = %.4f x^{%.4f}\\n', a, b);"
+  },
+  {
+    "serial": 6,
+    "title": "Quadratic Curve Fitting",
+    "description": "Fit quadratic curve y = ax^2 + bx + c using least squares.",
+    "explanation": "Uses polynomial regression to compute best fit quadratic equation.",
+    "example": {
+      "input": "x=[1 2 3], y=[1 4 9]",
+      "output": "y = ax^2 + bx + c"
+    },
+    "keywords": ["polynomial fitting", "quadratic"],
+    "code": "clc;\\nclear;\\nx = input('Enter x: ');\\ny = input('Enter y: ');\\nn = length(x);\\nSx = sum(x);\\nSx2 = sum(x.^2);\\nSx3 = sum(x.^3);\\nSx4 = sum(x.^4);\\nSy = sum(y);\\nSxy = sum(x.*y);\\nSx2y = sum(x.^2 .* y);\\nA = [Sx4 Sx3 Sx2; Sx3 Sx2 Sx; Sx2 Sx n];\\nB = [Sx2y; Sxy; Sy];\\ncoeff = A \\\\ B;\\na = coeff(1);\\nb = coeff(2);\\nc = coeff(3);\\nfprintf('y = %.4f x^2 + %.4f x + %.4f\\n', a, b, c);"
+  }
+]

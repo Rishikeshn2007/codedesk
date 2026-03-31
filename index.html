@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GM University Code Desk</title>
+  <meta
+    name="description"
+    content="Browse GM University programming programs by subject with search, clean code formatting, and one-tap copy."
+  >
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="navbar" aria-label="Primary navigation">
+      <div class="brand-block">
+        <p class="eyebrow">GM University</p>
+        <h1>Code Desk</h1>
+      </div>
+
+      <div class="nav-actions">
+        <button
+          class="theme-toggle"
+          id="theme-toggle"
+          type="button"
+          aria-label="Toggle dark mode"
+          aria-pressed="false"
+        >
+          <span class="theme-toggle-text">Dark mode</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="hero-kicker">Static program library</p>
+        <h2>Find lab programs faster, copy clean code instantly, and stay focused.</h2>
+        <p class="hero-text">
+          Switch between subjects, search by serial number, program name, or keywords,
+          and browse neatly formatted code designed for quick study on any screen.
+        </p>
+      </div>
+      <div class="hero-stats" aria-label="Highlights">
+        <article class="stat-card">
+          <strong id="subject-count">3</strong>
+          <span>Subjects</span>
+        </article>
+        <article class="stat-card">
+          <strong id="program-count">0</strong>
+          <span>Programs shown</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="control-panel" aria-label="Program controls">
+      <div class="field-group">
+        <label for="subject-select">Subject</label>
+        <select id="subject-select" class="control-input">
+          <option value="matlab">Matlab</option>
+          <option value="dsa">DSA</option>
+          <option value="python">Python</option>
+          <!--<option value="dbms">DBMS</option>-->
+        </select>
+      </div>
+
+      <div class="field-group search-group">
+        <label for="search-input">Search programs</label>
+        <input
+          id="search-input"
+          class="control-input"
+          type="search"
+          placeholder="Search by title, serial number, or keywords"
+          autocomplete="off"
+        >
+      </div>
+    </section>
+
+    <section class="status-row" aria-live="polite">
+      <p id="status-text">Loading DSA programs...</p>
+    </section>
+
+    <section id="help-panel" class="help-panel" hidden aria-live="polite">
+      <h3>How to open this site</h3>
+      <p>
+        Your browser blocks JSON loading from <code>file://</code> pages. Open this project with a
+        tiny local server, then visit <code>http://localhost:8000</code>.
+      </p>
+      <pre><code>cd /home/rishi/Desktop/codedesk
+python3 -m http.server 8000</code></pre>
+    </section>
+
+    <section class="program-grid-section">
+      <div id="empty-state" class="empty-state" hidden>
+        <h3>No matching programs found</h3>
+        <p>Try a different keyword or switch to another subject.</p>
+      </div>
+
+      <div id="program-grid" class="program-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <template id="program-card-template">
+    <article class="program-card">
+      <div class="card-header">
+        <div>
+          <p class="serial-badge"></p>
+          <h3 class="program-title"></h3>
+        </div>
+        <button class="copy-button" type="button">Copy</button>
+      </div>
+
+      <p class="program-description"></p>
+
+      <section class="info-block">
+        <h4>Explanation</h4>
+        <p class="program-explanation"></p>
+      </section>
+
+      <section class="info-block example-block">
+        <h4>Example</h4>
+        <div class="example-grid">
+          <div class="example-panel">
+            <span class="example-label">Input</span>
+            <pre class="example-value example-input"></pre>
+          </div>
+          <div class="example-panel">
+            <span class="example-label">Output</span>
+            <pre class="example-value example-output"></pre>
+          </div>
+        </div>
+      </section>
+
+      <div class="keyword-row" aria-label="Keywords"></div>
+
+      <div class="code-shell">
+        <pre><code class="program-code"></code></pre>
+      </div>
+    </article>
+  </template>
+
+  <script src="data/data-store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

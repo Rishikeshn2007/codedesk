@@ -1,0 +1,122 @@
+[
+  {
+    "serial": 1,
+    "title": "String Manipulation",
+    "description": "Program to perform various operations on a user's full name.",
+    "explanation": "The program extracts first and last name, reverses them, converts case, and prints formatted messages.",
+    "example": {
+      "input": "John Doe",
+      "output": "First: John, Last: Doe"
+    },
+    "keywords": ["string", "slicing", "formatting"],
+    "code": "name = input('Enter full name: ')\nparts = name.split()\nfirst = parts[0]\nlast = parts[-1]\nprint('First Name:', first)\nprint('Last Name:', last)\nprint('Reverse Order:', last + ', ' + first)\nprint('Uppercase:', name.upper())\nprint('Lowercase:', name.lower())\nprint(f'Welcome {first}!')\nprint('Welcome {}'.format(first))"
+  },
+  {
+    "serial": 2,
+    "title": "Numeric Operations",
+    "description": "Program to perform arithmetic operations on integer, float and numeric string.",
+    "explanation": "The program converts string to numeric types and performs arithmetic calculations demonstrating operator precedence.",
+    "example": {
+      "input": "5, 2.5, '10'",
+      "output": "Sum = 17.5"
+    },
+    "keywords": ["arithmetic", "type conversion"],
+    "code": "a = int(input('Enter integer: '))\nb = float(input('Enter float: '))\nc = input('Enter numeric string: ')\nc_int = int(c)\nc_float = float(c)\nprint('Sum:', a + b + c_float)\nprint('Difference:', a - b - c_float)\nprint('Product:', a * b * c_float)\nprint('Division:', a / b)\nprint('Operator precedence:', a + b * c_int ** 2)"
+  },
+  {
+    "serial": 3,
+    "title": "Leap Year Check",
+    "description": "Program to determine whether a year is leap year or not.",
+    "explanation": "A year is leap if divisible by 4 and not 100 unless divisible by 400.",
+    "example": {
+      "input": "2000",
+      "output": "Leap year"
+    },
+    "keywords": ["if", "decision making"],
+    "code": "year = int(input('Enter year: '))\nif (year % 400 == 0) or (year % 4 == 0 and year % 100 != 0):\n    print('Leap Year')\nelse:\n    print('Not Leap Year')"
+  },
+  {
+    "serial": 4,
+    "title": "Fibonacci Sequence",
+    "description": "Program to generate Fibonacci series up to n terms.",
+    "explanation": "Uses a loop to generate sequence where each term is sum of previous two.",
+    "example": {
+      "input": "5",
+      "output": "0 1 1 2 3"
+    },
+    "keywords": ["loop", "fibonacci"],
+    "code": "n = int(input('Enter number of terms: '))\na = 0\nb = 1\nfor i in range(n):\n    print(a, end=' ')\n    a, b = b, a + b"
+  },
+  {
+    "serial": 5,
+    "title": "Student Database Using List and Tuple",
+    "description": "Program to manage student records using list of tuples.",
+    "explanation": "Provides menu to add, search, remove and compute average marks.",
+    "example": {
+      "input": "Add: 1 John 85",
+      "output": "Student added"
+    },
+    "keywords": ["list", "tuple", "menu"],
+    "code": "students = []\nwhile True:\n    print('\\n1.Add 2.Search 3.Remove 4.Average 5.Display 6.Exit')\n    ch = int(input('Choice: '))\n    if ch == 1:\n        usn = input('USN: ')\n        name = input('Name: ')\n        marks = int(input('Marks: '))\n        students.append((usn, name, marks))\n    elif ch == 2:\n        key = input('Enter USN: ')\n        for s in students:\n            if s[0] == key:\n                print(s)\n    elif ch == 3:\n        key = input('Enter USN: ')\n        students = [s for s in students if s[0] != key]\n    elif ch == 4:\n        avg = sum(s[2] for s in students) / len(students)\n        print('Average:', avg)\n    elif ch == 5:\n        for s in students:\n            print(s)\n    else:\n        break"
+  },
+  {
+    "serial": 6,
+    "title": "Dictionary and Set Operations",
+    "description": "Program to manage employee records using dictionary and perform set operations.",
+    "explanation": "Demonstrates dictionary CRUD operations and set union, intersection, difference.",
+    "example": {
+      "input": "Add employee",
+      "output": "Employee added"
+    },
+    "keywords": ["dictionary", "set"],
+    "code": "employees = {}\ndep1 = set()\ndep2 = set()\nwhile True:\n    print('1.Add 2.Remove 3.Search 4.Display 5.Set Ops 6.Exit')\n    ch = int(input('Choice: '))\n    if ch == 1:\n        eid = input('ID: ')\n        name = input('Name: ')\n        employees[eid] = name\n    elif ch == 2:\n        eid = input('ID: ')\n        employees.pop(eid, None)\n    elif ch == 3:\n        eid = input('ID: ')\n        print(employees.get(eid, 'Not Found'))\n    elif ch == 4:\n        for k in sorted(employees):\n            print(k, employees[k])\n    elif ch == 5:\n        print('Union:', dep1 | dep2)\n        print('Intersection:', dep1 & dep2)\n        print('Difference:', dep1 - dep2)\n    else:\n        break"
+  },
+  {
+    "serial": 7,
+    "title": "NumPy Array Operations",
+    "description": "Program to demonstrate NumPy array arithmetic and slicing.",
+    "explanation": "Performs element-wise operations and statistical calculations using NumPy.",
+    "example": {
+      "input": "[1 2 3], [4 5 6]",
+      "output": "[5 7 9]"
+    },
+    "keywords": ["numpy", "array"],
+    "code": "import numpy as np\na = np.array(list(map(int, input('Enter array 1: ').split())))\nb = np.array(list(map(int, input('Enter array 2: ').split())))\nprint('Addition:', a + b)\nprint('Subtraction:', a - b)\nprint('Multiplication:', a * b)\nprint('Division:', a / b)\nprint('Sum:', a.sum())\nprint('Mean:', a.mean())\nprint('Max:', a.max())\nprint('Min:', a.min())\nprint('Slice:', a[:3])"
+  },
+  {
+    "serial": 8,
+    "title": "Pandas CSV Processing",
+    "description": "Program to read and analyze CSV file using pandas.",
+    "explanation": "Reads student marks from CSV and filters high scorers.",
+    "example": {
+      "input": "students.csv",
+      "output": "Filtered table"
+    },
+    "keywords": ["pandas", "csv"],
+    "code": "import pandas as pd\ndf = pd.read_csv('students.csv')\nprint(df.head())\nprint(df.tail())\nhigh = df[df['Marks'] > 80]\nprint(high)\nprint(df.mean())\ndf.to_csv('output.csv', index=False)"
+  },
+  {
+    "serial": 9,
+    "title": "Matplotlib Visualization",
+    "description": "Program to create bar, pie and line charts.",
+    "explanation": "Uses matplotlib to visualize sales data.",
+    "example": {
+      "input": "Product data",
+      "output": "Charts displayed"
+    },
+    "keywords": ["matplotlib", "plot"],
+    "code": "import matplotlib.pyplot as plt\nnames = input('Products: ').split()\nvalues = list(map(int, input('Sales: ').split()))\nplt.bar(names, values)\nplt.title('Bar Chart')\nplt.show()\nplt.pie(values, labels=names, autopct='%1.1f%%')\nplt.show()\nplt.plot(values)\nplt.show()"
+  },
+  {
+    "serial": 10,
+    "title": "Exploratory Data Analysis",
+    "description": "Program to perform basic EDA on dataset.",
+    "explanation": "Loads dataset, cleans missing values and visualizes distributions.",
+    "example": {
+      "input": "dataset.csv",
+      "output": "Graphs and stats"
+    },
+    "keywords": ["eda", "data science"],
+    "code": "import pandas as pd\nimport matplotlib.pyplot as plt\ndf = pd.read_csv('data.csv')\nprint(df.describe())\ndf = df.dropna()\ndf.hist()\nplt.show()"
+  }
+]
