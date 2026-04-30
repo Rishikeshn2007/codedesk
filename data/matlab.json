@@ -70,5 +70,17 @@
     },
     "keywords": ["polynomial fitting", "quadratic", "least squares", "curve fitting"],
     "code": "clc;\nclear;\nclose all;\nx = input('Enter the independent variable data x as a vector [ ]: ');\ny = input('Enter the dependent variable data y as a vector [ ]: ');\nn = length(x);\nSx = sum(x);\nSx2 = sum(x.^2);\nSx3 = sum(x.^3);\nSx4 = sum(x.^4);\nSy = sum(y);\nSxy = sum(x.*y);\nSx2y = sum(x.^2 .* y);\nA = [Sx4 Sx3 Sx2; Sx3 Sx2 Sx; Sx2 Sx n];\nB = [Sx2y; Sxy; Sy];\ncoeff = A \\ B;\na = coeff(1);\nb = coeff(2);\nc = coeff(3);\nfprintf('\\nBest fit quadratic curve:\\n');\nfprintf('y = %.4f x^2 + %.4f x + %.4f\\n', a, b, c);\nx_fit = linspace(min(x), max(x), 200);\ny_fit = a*x_fit.^2 + b*x_fit + c;\nfigure;\nplot(x, y, 'o', 'MarkerSize', 8, 'LineWidth', 2);\nhold on;\nplot(x_fit, y_fit, '-', 'LineWidth', 2);\ngrid on;\nxlabel('x (Independent Variable)');\nylabel('y (Dependent Variable)');\nlegend('Experimental Data', 'Best Fit Curve', 'Location', 'best');"
-  }
+  },
+  {
+  "serial": 7,
+  "title": "Binomial Distribution Simulation and Analysis",
+  "description": "Simulate a binomial distribution using random sampling and compare the sample mean and variance with theoretical values.",
+  "explanation": "Generates random samples from a binomial distribution using given parameters n and p, then computes and compares sample statistics with theoretical mean and variance. Also visualizes the distribution using a histogram and overlays the theoretical PMF.",
+  "example": {
+    "input": "n = 10, p = 0.5, N = 1000",
+    "output": "Theoretical Mean = 5.000000, Sample Mean ≈ 4.958000, Theoretical Variance = 2.500000"
+  },
+  "keywords": ["binomial distribution", "random sampling", "mean", "variance", "PMF", "histogram"],
+  "code": "clc;\nclear;\nclose all;\n\nn = input('Enter number of trials (n): ');\np = input('Enter probability of success (p): ');\nN = input('Enter number of samples: ');\n\ndata = binornd(n, p, N, 1);\n\nsample_mean = mean(data);\nsample_variance = var(data);\n\ntheoretical_mean = n*p;\ntheoretical_variance = n*p*(1-p);\n\nfprintf('Theoretical Mean = %f\\n', theoretical_mean);\nfprintf('Sample Mean = %f\\n', sample_mean);\nfprintf('Theoretical Variance = %f\\n', theoretical_variance);\nfprintf('Sample Variance = %f\\n', sample_variance);\n\nfigure;\nhistogram(data, 'Normalization', 'pdf');\nhold on;\n\nx = 0:n;\npmf = binopdf(x, n, p);\nstem(x, pmf, 'r', 'LineWidth', 2);\n\ntitle(['Binomial Distribution (n = ', num2str(n), ', p = ', num2str(p), ')']);\nxlabel('x');\nylabel('Probability');\nlegend('Histogram', 'PMF');\ngrid on;"
+}
 ]
