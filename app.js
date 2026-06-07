@@ -5,99 +5,262 @@ const SUBJECTS = {
   dbms: { label: "DBMS", file: "data/dbms.json" }
 };
 
+const DUMMY_ADS = [
+  { title: "Learn DSA & System Design", desc: "Master Data Structures and System Design", button: "Learn more" },
+  { title: "Generative AI Training", desc: "Master AI with Expert Training", button: "Learn more" },
+  { title: "Web Development", desc: "Build Modern Web Applications", button: "Explore" },
+  { title: "Python Mastery", desc: "From Basics to Advanced Python", button: "Learn more" },
+  { title: "Java Programming", desc: "Complete Java Development Course", button: "Get Started" },
+  { title: "Cloud Computing", desc: "AWS, Azure, GCP Certified", button: "Learn more" },
+  { title: "Competitive Coding", desc: "Ace Your Next Interview", button: "Start Now" }
+];
+
 const state = {
-  currentSubject: "matlab",
-  programs: [],
-  filteredPrograms: []
+  allSubjectData: {},
+  currentProgram: null,
+  filteredPrograms: [],
+  currentSearch: ""
 };
 
-const subjectSelect = document.getElementById("subject-select");
 const searchInput = document.getElementById("search-input");
-const programGrid = document.getElementById("program-grid");
 const statusText = document.getElementById("status-text");
-const helpPanel = document.getElementById("help-panel");
 const emptyState = document.getElementById("empty-state");
-const programCardTemplate = document.getElementById("program-card-template");
-const programCount = document.getElementById("program-count");
-const subjectCount = document.getElementById("subject-count");
-const themeToggle = document.getElementById("theme-toggle");
+const programTemplate = document.getElementById("program-template");
+const programSection = document.getElementById("program-section");
+const currentCategoryEl = document.getElementById("current-category");
+const subjectAccordion = document.getElementById("subject-accordion");
+const adContainer = document.getElementById("ad-container");
 
 document.addEventListener("DOMContentLoaded", initializeApp);
 
-function initializeApp() {
-  subjectCount.textContent = Object.keys(SUBJECTS).length;
-  applySavedTheme();
-  subjectSelect.value = state.currentSubject;
-
-  subjectSelect.addEventListener("change", (event) => {
-    loadSubject(event.target.value);
+async function initializeApp() {
+  buildAccordion();
+  loadAllSubjects();
+  renderAdvertisements();
+  
+  searchInput.addEventListener("input", (e) => {
+    filterAndRender(e.target.value);
   });
-
-  searchInput.addEventListener("input", () => {
-    filterPrograms(searchInput.value);
-  });
-
-  themeToggle.addEventListener("click", toggleTheme);
-
-  loadSubject(state.currentSubject);
 }
 
-async function loadSubject(subjectKey) {
-  const subject = SUBJECTS[subjectKey];
+function buildAccordion() {
+  const fragment = document.createDocumentFragment();
 
-  if (!subject) {
-    state.programs = [];
-    state.filteredPrograms = [];
-    renderPrograms([]);
-    emptyState.hidden = false;
-    helpPanel.hidden = true;
-    statusText.textContent = `Unknown subject: ${subjectKey}`;
-    console.warn(`Unknown subject requested: ${subjectKey}`);
+  Object.entries(SUBJECTS).forEach(([key, subject]) => {
+    const item = document.createElement("div");
+    item.className = "accordion-item";
+    item.innerHTML = `
+      <button class="accordion-button" data-subject="${key}">
+        <span>${subject.label}</span>
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-content" data-subject="${key}"></div>
+    `;
+
+    const button = item.querySelector(".accordion-button");
+    button.addEventListener("click", (e) => {
+      toggleAccordion(e.currentTarget);
+    });
+
+    fragment.appendChild(item);
+  });
+
+  subjectAccordion.appendChild(fragment);
+}
+
+async function loadAllSubjects() {
+  for (const [key, subject] of Object.entries(SUBJECTS)) {
+    try {
+      const data = isFileProtocol()
+        ? window.SUBJECT_DATA?.[key] || []
+        : await (await fetch(subject.file)).json();
+
+      state.allSubjectData[key] = normalizePrograms(data);
+      populateAccordionContent(key);
+    } catch (error) {
+      console.warn(`Failed to load ${subject.label}:`, error);
+      state.allSubjectData[key] = [];
+    }
+  }
+}
+
+function populateAccordionContent(subjectKey) {
+  const content = document.querySelector(`.accordion-content[data-subject="${subjectKey}"]`);
+  const programs = state.allSubjectData[subjectKey];
+  
+  const fragment = document.createDocumentFragment();
+  programs.forEach((program) => {
+    const item = document.createElement("div");
+    item.className = "program-item";
+    item.textContent = `${program.serial}. ${program.title}`;
+    item.dataset.key = subjectKey;
+    item.dataset.serial = program.serial;
+    
+    item.addEventListener("click", () => {
+      displayProgram(program, subjectKey);
+      updateActiveItem(item);
+    });
+    
+    fragment.appendChild(item);
+  });
+  
+  content.appendChild(fragment);
+}
+
+function toggleAccordion(button) {
+  const subject = button.dataset.subject;
+  const content = document.querySelector(`.accordion-content[data-subject="${subject}"]`);
+  
+  // Close other accordions
+  document.querySelectorAll(".accordion-button").forEach((btn) => {
+    if (btn !== button) {
+      btn.classList.remove("active");
+      const otherContent = document.querySelector(
+        `.accordion-content[data-subject="${btn.dataset.subject}"]`
+      );
+      otherContent.classList.remove("open");
+    }
+  });
+
+  button.classList.toggle("active");
+  content.classList.toggle("open");
+}
+
+function filterAndRender(query) {
+  state.currentSearch = query.toLowerCase();
+  
+  if (!state.currentProgram) {
+    statusText.textContent = "Select a program from the left menu";
     return;
   }
 
-  state.currentSubject = subjectKey;
-  statusText.textContent = `Loading ${subject.label} programs...`;
-  programGrid.innerHTML = "";
-  emptyState.hidden = true;
-  helpPanel.hidden = true;
-
-  try {
-    if (isFileProtocol()) {
-      const bundledPrograms = window.SUBJECT_DATA?.[subjectKey];
-
-      if (!bundledPrograms) {
-        throw new Error(`Missing bundled data for ${subjectKey}`);
-      }
-
-      state.programs = normalizePrograms(bundledPrograms);
-      filterPrograms(searchInput.value);
-      statusText.textContent = `Showing ${state.filteredPrograms.length} ${subject.label} programs.`;
-      return;
-    }
-
-    const response = await fetch(subject.file);
-
-    if (!response.ok) {
-      throw new Error(`Failed to load ${subject.file}`);
-    }
-
-    const programs = await response.json();
-    state.programs = normalizePrograms(programs);
-    filterPrograms(searchInput.value);
-    statusText.textContent = `Showing ${state.filteredPrograms.length} ${subject.label} programs.`;
-  } catch (error) {
-    state.programs = [];
-    state.filteredPrograms = [];
-    renderPrograms([]);
+  // Check if current program matches filter
+  if (!matchesQuery(state.currentProgram, state.currentSearch)) {
     emptyState.hidden = false;
-    helpPanel.hidden = false;
-    statusText.textContent =
-      isFileProtocol()
-        ? `Unable to load ${subject.label} data in file mode.`
-        : `Unable to load ${subject.label} data from ${subject.file}.`;
-    console.warn(error);
+    programSection.innerHTML = "";
+    statusText.textContent = `No programs match "${query}"`;
+    return;
   }
+
+  emptyState.hidden = true;
+  statusText.textContent = `Showing program matching "${query}"`;
+  renderProgram(state.currentProgram);
+}
+
+function matchesQuery(program, query) {
+  if (!query) return true;
+  
+  const haystack = [
+    String(program.serial),
+    program.title,
+    program.description,
+    ...program.keywords
+  ].join(" ").toLowerCase();
+  
+  return haystack.includes(query);
+}
+
+function displayProgram(program, subject) {
+  state.currentProgram = program;
+  currentCategoryEl.textContent = `${SUBJECTS[subject].label} > ${program.title}`;
+  renderProgram(program);
+  
+  // Clear search if it doesn't match
+  if (!matchesQuery(program, state.currentSearch)) {
+    searchInput.value = "";
+    state.currentSearch = "";
+  }
+}
+
+function renderProgram(program) {
+  programSection.innerHTML = "";
+  emptyState.hidden = true;
+
+  const card = programTemplate.content.firstElementChild.cloneNode(true);
+  
+  card.querySelector(".serial-badge").textContent = `Program ${program.serial}`;
+  card.querySelector(".program-title").textContent = program.title;
+  card.querySelector(".program-description").textContent = program.description;
+  card.querySelector(".program-explanation").textContent = program.explanation;
+  card.querySelector(".example-input").textContent = program.example.input;
+  card.querySelector(".example-output").textContent = program.example.output;
+  card.querySelector(".program-code").textContent = program.code;
+
+  const keywordRow = card.querySelector(".keyword-row");
+  keywordRow.innerHTML = "";
+  program.keywords.forEach((keyword) => {
+    const chip = document.createElement("span");
+    chip.className = "keyword-chip";
+    chip.textContent = keyword;
+    keywordRow.appendChild(chip);
+  });
+
+  if (program.keywords.length === 0) {
+    keywordRow.hidden = true;
+  }
+
+  const copyButton = card.querySelector(".copy-button");
+  copyButton.addEventListener("click", () => copyCode(program.code, copyButton));
+
+  programSection.appendChild(card);
+  statusText.textContent = `Program ${program.serial}: ${program.title}`;
+}
+
+function updateActiveItem(element) {
+  document.querySelectorAll(".program-item").forEach((item) => {
+    item.classList.remove("active");
+  });
+  element.classList.add("active");
+}
+
+async function copyCode(code, button) {
+  const original = button.textContent;
+  
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(code);
+    } else {
+      copyUsingFallback(code);
+    }
+    button.textContent = "Copied!";
+    button.classList.add("copied");
+  } catch (error) {
+    button.textContent = "Failed!";
+    console.error(error);
+  }
+
+  setTimeout(() => {
+    button.textContent = original;
+    button.classList.remove("copied");
+  }, 1600);
+}
+
+function copyUsingFallback(code) {
+  const textarea = document.createElement("textarea");
+  textarea.value = code;
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
+function renderAdvertisements() {
+  const fragment = document.createDocumentFragment();
+  
+  DUMMY_ADS.forEach((ad) => {
+    const adElement = document.createElement("div");
+    adElement.className = "ad-card";
+    adElement.innerHTML = `
+      <h3 class="ad-title">${ad.title}</h3>
+      <p class="ad-description">${ad.desc}</p>
+      <button class="ad-button">${ad.button}</button>
+    `;
+    fragment.appendChild(adElement);
+  });
+
+  adContainer.appendChild(fragment);
 }
 
 function normalizePrograms(programs) {
@@ -105,10 +268,10 @@ function normalizePrograms(programs) {
     serial: program.serial,
     title: program.title,
     description: program.description,
-    explanation: program.explanation || "No explanation available for this program yet.",
+    explanation: program.explanation || "No explanation available.",
     example: {
-      input: program.example?.input || "No sample input provided.",
-      output: program.example?.output || "No sample output provided."
+      input: program.example?.input || "No sample input.",
+      output: program.example?.output || "No sample output."
     },
     code: decodeCode(program.code || ""),
     keywords: Array.isArray(program.keywords) ? program.keywords : []
@@ -120,149 +283,6 @@ function decodeCode(code) {
     .replace(/\\r\\n/g, "\n")
     .replace(/\\n/g, "\n")
     .replace(/\\t/g, "\t");
-}
-
-function filterPrograms(query) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  state.filteredPrograms = state.programs.filter((program) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    const haystack = [
-      String(program.serial),
-      program.title,
-      program.description,
-      ...program.keywords
-    ]
-      .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(normalizedQuery);
-  });
-
-  renderPrograms(state.filteredPrograms);
-  updateEmptyState(normalizedQuery);
-}
-
-function renderPrograms(programs) {
-  programGrid.innerHTML = "";
-
-  const fragment = document.createDocumentFragment();
-
-  programs.forEach((program) => {
-    const card = programCardTemplate.content.firstElementChild.cloneNode(true);
-    const serialBadge = card.querySelector(".serial-badge");
-    const title = card.querySelector(".program-title");
-    const description = card.querySelector(".program-description");
-    const explanation = card.querySelector(".program-explanation");
-    const exampleInput = card.querySelector(".example-input");
-    const exampleOutput = card.querySelector(".example-output");
-    const code = card.querySelector(".program-code");
-    const keywordRow = card.querySelector(".keyword-row");
-    const copyButton = card.querySelector(".copy-button");
-
-    serialBadge.textContent = `Program ${program.serial}`;
-    title.textContent = program.title;
-    description.textContent = program.description;
-    explanation.textContent = program.explanation;
-    exampleInput.textContent = program.example.input;
-    exampleOutput.textContent = program.example.output;
-    code.textContent = program.code;
-
-    keywordRow.innerHTML = "";
-    program.keywords.forEach((keyword) => {
-      const chip = document.createElement("span");
-      chip.className = "keyword-chip";
-      chip.textContent = keyword;
-      keywordRow.appendChild(chip);
-    });
-
-    if (program.keywords.length === 0) {
-      keywordRow.setAttribute("hidden", "true");
-    } else {
-      keywordRow.removeAttribute("hidden");
-    }
-
-    copyButton.addEventListener("click", () => copyProgramCode(program.code, copyButton));
-
-    fragment.appendChild(card);
-  });
-
-  programGrid.appendChild(fragment);
-  programCount.textContent = String(programs.length);
-}
-
-function updateEmptyState(query) {
-  const hasResults = state.filteredPrograms.length > 0;
-  emptyState.hidden = hasResults;
-
-  if (!hasResults) {
-    statusText.textContent = query
-      ? `No results found in ${SUBJECTS[state.currentSubject].label} for "${query}".`
-      : `No programs available for ${SUBJECTS[state.currentSubject].label}.`;
-    programCount.textContent = "0";
-    return;
-  }
-
-  statusText.textContent = query
-    ? `Found ${state.filteredPrograms.length} matching programs in ${SUBJECTS[state.currentSubject].label}.`
-    : `Showing ${state.filteredPrograms.length} ${SUBJECTS[state.currentSubject].label} programs.`;
-}
-
-async function copyProgramCode(code, button) {
-  const originalText = button.textContent;
-
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(code);
-    } else {
-      copyUsingSelectionFallback(code);
-    }
-    button.textContent = "Copied!";
-    button.classList.add("copied");
-  } catch (error) {
-    button.textContent = "Copy failed";
-    console.error(error);
-  }
-
-  window.setTimeout(() => {
-    button.textContent = originalText;
-    button.classList.remove("copied");
-  }, 1600);
-}
-
-function copyUsingSelectionFallback(code) {
-  const helperTextArea = document.createElement("textarea");
-  helperTextArea.value = code;
-  helperTextArea.setAttribute("readonly", "");
-  helperTextArea.style.position = "fixed";
-  helperTextArea.style.opacity = "0";
-  document.body.appendChild(helperTextArea);
-  helperTextArea.select();
-  document.execCommand("copy");
-  document.body.removeChild(helperTextArea);
-}
-
-function toggleTheme() {
-  const isDark = document.body.classList.toggle("dark-mode");
-  themeToggle.setAttribute("aria-pressed", String(isDark));
-  themeToggle.querySelector(".theme-toggle-text").textContent = isDark ? "Light mode" : "Dark mode";
-  localStorage.setItem("gm-code-desk-theme", isDark ? "dark" : "light");
-}
-
-function applySavedTheme() {
-  const savedTheme = localStorage.getItem("gm-code-desk-theme");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const shouldUseDark = savedTheme ? savedTheme === "dark" : prefersDark;
-
-  if (shouldUseDark) {
-    document.body.classList.add("dark-mode");
-  }
-
-  themeToggle.setAttribute("aria-pressed", String(shouldUseDark));
-  themeToggle.querySelector(".theme-toggle-text").textContent = shouldUseDark ? "Light mode" : "Dark mode";
 }
 
 function isFileProtocol() {
